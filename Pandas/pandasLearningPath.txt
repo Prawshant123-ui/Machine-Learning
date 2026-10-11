@@ -1,0 +1,226 @@
+PANDAS CHEATSHEET - CATEGORIZED
+===============================
+
+1) DATA LOADING & INSPECTION
+----------------------------
+a) Load
+   pd.read_csv()
+   pd.read_excel()
+b) Preview
+   df.head()
+   df.tail()
+   df.sample()
+c) Structure
+   df.shape
+   df.columns
+   df.dtypes
+   df.info()
+   df.memory_usage()
+d) Quick look at values
+   df.describe()
+   df.nunique()
+   df["column"].unique()
+   df["column"].value_counts()
+
+
+2) SELECTING & FILTERING
+------------------------
+a) Columns
+   df["column"]
+   df[["col1", "col2"]]
+   df.filter()
+   df.select_dtypes()
+b) Rows
+   df.loc[]
+   df.iloc[]
+   df.query()
+c) Conditional
+   df.where()
+   df.mask()
+   df["column"].isin()
+   df["column"].between(a, b)
+
+
+3) DATA CLEANING
+----------------
+a) Missing values
+   df.isnull()
+   df.isna()
+   df.notnull()
+   df.notna()
+   df.isnull().sum()
+   df.dropna()
+   df.fillna()
+   df.ffill()
+   df.bfill()
+   df.interpolate()
+b) Duplicates
+   df.duplicated()
+   df.duplicated().sum()
+   df.drop_duplicates()
+   df.drop_duplicates(subset=[])
+c) Data types
+   df.astype()
+   pd.to_numeric()
+   pd.to_datetime()
+   pd.to_timedelta()
+   df.convert_dtypes()
+d) Strings
+   df["column"].str.strip()
+   df["column"].str.lower()
+   df["column"].str.upper()
+   df["column"].str.title()
+   df["column"].str.capitalize()
+   df["column"].str.replace()
+   df["column"].str.split()
+   df["column"].str.contains()
+   df["column"].str.startswith()
+   df["column"].str.endswith()
+   df["column"].str.len()
+   df["column"].str.extract()
+   df["column"].str.fullmatch()
+e) Replace & standardize
+   df.replace()
+   df["column"].map()
+   df.rename()
+   df.rename_axis()
+   df.set_axis()
+f) Outliers & invalid values
+   df.clip()
+   df.quantile()
+   df.abs()
+   df.nlargest()
+   df.nsmallest()
+   df.mean() / df.median() / df.std()   (used for thresholds)
+
+
+4) TRANSFORMATION & FEATURE ENGINEERING
+---------------------------------------
+a) Apply functions
+   df.apply()
+   df.map()
+   df.transform()
+   df.pipe()
+   df.eval()
+   df.assign()
+   (Note: applymap() is deprecated; use DataFrame.map())
+b) Binning
+   pd.cut()
+   pd.qcut()
+c) Categorical encoding
+   pd.get_dummies()
+   df.astype("category")
+   df["column"].cat.codes
+   df["column"].cat.categories
+
+
+5) SORTING & INDEXING
+---------------------
+a) Sort
+   df.sort_values()
+   df.sort_index()
+b) Index control
+   df.set_index()
+   df.reset_index()
+   df.reindex()
+
+
+6) RESHAPING DATA STRUCTURE
+---------------------------
+a) Add or remove
+   df.drop()
+   df.drop(columns=[])
+   df.pop()
+   df.insert()
+b) Reshape
+   df.T
+   df.melt()
+   df.pivot()
+   df.pivot_table()
+   df.stack()
+   df.unstack()
+   df.explode()
+
+
+7) COMBINING DATASETS
+---------------------
+a) Stack
+   pd.concat()
+b) Join on keys
+   pd.merge()
+   df.merge()
+   df.join()
+
+
+8) GROUPING & AGGREGATION
+-------------------------
+a) Group
+   df.groupby()
+b) Aggregate
+   df.agg()
+   df.aggregate()
+   df.transform()
+c) Summary functions
+   df.count()
+   df.size
+   df.sum()
+   df.mean()
+   df.median()
+   df.min()
+   df.max()
+   df.std()
+   df.var()
+
+
+9) DATE & TIME PROCESSING
+-------------------------
+a) Extract parts
+   df["date"].dt.year
+   df["date"].dt.month
+   df["date"].dt.day
+   df["date"].dt.quarter
+   df["date"].dt.dayofweek
+   df["date"].dt.day_name()
+b) Format & convert
+   df["date"].dt.strftime()
+   df["date"].dt.to_period()
+
+
+10) STATISTICS & CORRELATION
+----------------------------
+a) Relationships
+   df.corr()
+   df.cov()
+   df.corrwith()
+b) Distribution & change
+   df.mode()
+   df.rank()
+   df.pct_change()
+   df.diff()
+   df.value_counts()
+
+
+11) EXPORT & FINAL VALIDATION
+-----------------------------
+a) Save
+   df.to_csv()
+   df.to_excel()
+   df.to_json()
+   df.to_pickle()
+b) Validate
+   df.shape
+   df.info()
+   df.dtypes
+   df.isnull().sum()
+   df.duplicated().sum()
+   df.describe()
+
+
+NOTES
+=====
+- read_csv is pd.read_csv(), not df.read_csv().
+- between() and isin() are Series methods: df["col"].between(a, b).
+- size is an attribute: df.size, or groupby(...).size().
+- Replace "column", "col1", "col2", "date" with real column names.
+- Choose cleaning strategies based on what the data means; don't
+  automatically delete every outlier or fill every missing value.
