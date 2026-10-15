@@ -1,5 +1,14 @@
-PANDAS CHEATSHEET - CATEGORIZED
-===============================
+EDA CHEATSHEET - CATEGORIZED (pandas + matplotlib/seaborn + stats)
+===================================================================
+
+Setup
+-----
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats
+
 
 1) DATA LOADING & INSPECTION
 ----------------------------
@@ -18,6 +27,7 @@ c) Structure
    df.memory_usage()
 d) Quick look at values
    df.describe()
+   df.describe(include="object")
    df.nunique()
    df["column"].unique()
    df["column"].value_counts()
@@ -85,16 +95,101 @@ e) Replace & standardize
    df.rename()
    df.rename_axis()
    df.set_axis()
-f) Outliers & invalid values
-   df.clip()
-   df.quantile()
-   df.abs()
+
+
+4) OUTLIER DETECTION
+--------------------
+a) Numbers
+   df["column"].quantile([0.25, 0.75])      (Q1, Q3 for the IQR rule)
+   IQR = Q3 - Q1                            (outside Q1 - 1.5*IQR / Q3 + 1.5*IQR)
+   z = (s - s.mean()) / s.std()             (flag where abs(z) > 3)
    df.nlargest()
    df.nsmallest()
-   df.mean() / df.median() / df.std()   (used for thresholds)
+   df.abs()
+b) Plots
+   sns.boxplot(x=df["column"])
+   sns.boxplot(data=df, x="cat", y="num")
+c) Handling
+   df.clip(lower, upper)                    (cap values)
+   df.drop()                                (remove rows)
+   df.loc[mask, "column"] = value           (replace values)
 
 
-4) TRANSFORMATION & FEATURE ENGINEERING
+5) UNIVARIATE ANALYSIS (one column at a time)
+---------------------------------------------
+a) Numeric summary
+   df["column"].mean()
+   df["column"].median()
+   df["column"].mode()
+   df["column"].std()
+   df["column"].var()
+   df["column"].skew()
+   df["column"].kurt()
+b) Numeric plots
+   sns.histplot(df["column"], kde=True)
+   sns.kdeplot(df["column"])
+   sns.boxplot(x=df["column"])
+   df.hist()
+c) Categorical summary
+   df["column"].value_counts()
+   df["column"].value_counts(normalize=True)
+d) Categorical plots
+   sns.countplot(data=df, x="column")
+   df["column"].value_counts().plot.bar()
+   df["column"].value_counts().plot.pie()
+
+
+6) BIVARIATE ANALYSIS (two columns)
+-----------------------------------
+a) Numeric vs numeric
+   df.corr(numeric_only=True)
+   df.cov()
+   df.corrwith()
+   sns.scatterplot(data=df, x="a", y="b")
+   sns.regplot(data=df, x="a", y="b")
+b) Category vs numeric
+   df.groupby("cat")["num"].mean()
+   sns.boxplot(data=df, x="cat", y="num")
+   sns.violinplot(data=df, x="cat", y="num")
+   sns.barplot(data=df, x="cat", y="num")
+c) Category vs category
+   pd.crosstab(df["a"], df["b"])
+   pd.crosstab(df["a"], df["b"], normalize="index")
+   sns.countplot(data=df, x="a", hue="b")
+
+
+7) MULTIVARIATE ANALYSIS (many columns)
+---------------------------------------
+a) Correlation
+   sns.heatmap(df.corr(numeric_only=True), annot=True)
+b) Pairwise
+   sns.pairplot(df)
+   sns.pairplot(df, hue="target")
+c) Summary tables
+   df.pivot_table()
+   df.groupby([]).agg()
+d) Dimensionality reduction (for visualization)
+   PCA().fit_transform()                    (sklearn.decomposition)
+   TSNE().fit_transform()                   (sklearn.manifold)
+
+
+8) DISTRIBUTION & STATISTICAL TESTS
+-----------------------------------
+a) Normality
+   stats.shapiro()
+   stats.probplot(s, plot=plt)              (Q-Q plot)
+b) Group comparison
+   stats.ttest_ind()                        (two group means)
+   stats.f_oneway()                         (three or more group means)
+   stats.mannwhitneyu()                     (non-normal alternative)
+c) Category relationships
+   stats.chi2_contingency()
+d) Numeric relationships
+   stats.pearsonr()
+   stats.spearmanr()
+
+
+9) TRANSFORMATION & FEATURE ENGINEERING
 ---------------------------------------
 a) Apply functions
    df.apply()
@@ -104,18 +199,26 @@ a) Apply functions
    df.eval()
    df.assign()
    (Note: applymap() is deprecated; use DataFrame.map())
-b) Binning
+b) Fix skew
+   np.log1p()
+   np.sqrt()
+   stats.boxcox()
+c) Scaling
+   StandardScaler().fit_transform()         (sklearn.preprocessing)
+   MinMaxScaler().fit_transform()
+d) Binning
    pd.cut()
    pd.qcut()
-c) Categorical encoding
+e) Categorical encoding
    pd.get_dummies()
    df.astype("category")
    df["column"].cat.codes
    df["column"].cat.categories
+   LabelEncoder().fit_transform()           (sklearn.preprocessing)
 
 
-5) SORTING & INDEXING
----------------------
+10) SORTING, INDEXING & RESHAPING
+---------------------------------
 a) Sort
    df.sort_values()
    df.sort_index()
@@ -123,16 +226,12 @@ b) Index control
    df.set_index()
    df.reset_index()
    df.reindex()
-
-
-6) RESHAPING DATA STRUCTURE
----------------------------
-a) Add or remove
+c) Add or remove
    df.drop()
    df.drop(columns=[])
    df.pop()
    df.insert()
-b) Reshape
+d) Reshape
    df.T
    df.melt()
    df.pivot()
@@ -142,8 +241,8 @@ b) Reshape
    df.explode()
 
 
-7) COMBINING DATASETS
----------------------
+11) COMBINING DATASETS
+----------------------
 a) Stack
    pd.concat()
 b) Join on keys
@@ -152,8 +251,8 @@ b) Join on keys
    df.join()
 
 
-8) GROUPING & AGGREGATION
--------------------------
+12) GROUPING & AGGREGATION
+--------------------------
 a) Group
    df.groupby()
 b) Aggregate
@@ -170,10 +269,15 @@ c) Summary functions
    df.max()
    df.std()
    df.var()
+d) Compare
+   df.rank()
+   df.pct_change()
+   df.diff()
+   df.value_counts()
 
 
-9) DATE & TIME PROCESSING
--------------------------
+13) DATE & TIME PROCESSING
+--------------------------
 a) Extract parts
    df["date"].dt.year
    df["date"].dt.month
@@ -184,23 +288,49 @@ a) Extract parts
 b) Format & convert
    df["date"].dt.strftime()
    df["date"].dt.to_period()
+c) Trends
+   df["column"].rolling(7).mean()
+   df.resample("M").sum()
+   df["column"].autocorr()
+d) Plot
+   df.plot(x="date", y="column")
+   sns.lineplot(data=df, x="date", y="column")
 
 
-10) STATISTICS & CORRELATION
+14) TARGET ANALYSIS (for ML)
 ----------------------------
-a) Relationships
-   df.corr()
-   df.cov()
-   df.corrwith()
-b) Distribution & change
-   df.mode()
-   df.rank()
-   df.pct_change()
-   df.diff()
-   df.value_counts()
+a) Target distribution
+   df["target"].value_counts()
+   df["target"].value_counts(normalize=True)
+   sns.countplot(data=df, x="target")
+b) Class imbalance
+   df["target"].value_counts(normalize=True)   (check for a heavy majority class)
+c) Features vs target
+   df.corrwith(df["target"])
+   df.groupby("target").mean(numeric_only=True)
+   sns.boxplot(data=df, x="target", y="num")
+   sns.countplot(data=df, x="cat", hue="target")
 
 
-11) EXPORT & FINAL VALIDATION
+15) PLOT CONTROL (matplotlib)
+-----------------------------
+a) Figure setup
+   plt.figure(figsize=(8, 5))
+   fig, ax = plt.subplots()
+   fig, axes = plt.subplots(2, 2)
+b) Labels
+   plt.title()
+   plt.xlabel()
+   plt.ylabel()
+   plt.legend()
+   plt.xticks(rotation=45)
+c) Finish
+   plt.tight_layout()
+   plt.savefig("plot.png", dpi=150)
+   plt.show()
+
+
+16) EXPORT & FINAL VALIDATION
 -----------------------------
 a) Save
    df.to_csv()
@@ -216,11 +346,26 @@ b) Validate
    df.describe()
 
 
+TYPICAL EDA ORDER
+=================
+Load (1) -> inspect (1) -> clean (3) -> outliers (4) -> univariate (5)
+-> bivariate (6) -> multivariate (7) -> distributions/tests (8)
+-> features (9) -> target analysis (14)
+
+
 NOTES
 =====
 - read_csv is pd.read_csv(), not df.read_csv().
 - between() and isin() are Series methods: df["col"].between(a, b).
 - size is an attribute: df.size, or groupby(...).size().
-- Replace "column", "col1", "col2", "date" with real column names.
+- Replace "column", "col1", "col2", "cat", "num", "date" with real
+  column names.
 - Choose cleaning strategies based on what the data means; don't
   automatically delete every outlier or fill every missing value.
+- Skewness near 0 is symmetric; positive means a long right tail,
+  negative a long left tail.
+- Fit scalers and encoders on training data only when you move on to
+  modeling, to avoid data leakage.
+- Sections 4 to 8, 14 and 15 are new compared with the original pandas
+  cheatsheet. Sections 1 to 3 and 9 to 13, 16 are the original content,
+  reordered.

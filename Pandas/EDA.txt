@@ -1,0 +1,324 @@
+PANDAS CHEATSHEET — EDA (EXPLORATORY DATA ANALYSIS)
+====================================================
+
+PURPOSE
+-------
+EDA helps you understand data, identify quality issues, discover patterns,
+and decide what preprocessing may be needed before machine learning.
+
+NOTE:
+- Replace example column names with names from your dataset.
+- Some methods below belong to Matplotlib or Seaborn, not pandas.
+- EDA is an investigation process, not just running methods.
+
+
+1) DATASET OVERVIEW
+-------------------
+a) Dataset structure
+   df.shape
+   df.info()
+   df.dtypes
+   df.columns
+   df.index
+   df.memory_usage()
+
+b) Quick inspection
+   df.head()
+   df.tail()
+   df.sample()
+   df.describe()
+   df.describe(include="all")
+
+c) Column overview
+   df.nunique()
+   df.select_dtypes(include="number")
+   df.select_dtypes(include=["object", "category"])
+
+
+2) UNIVARIATE ANALYSIS — ONE VARIABLE
+-------------------------------------
+Purpose:
+   Understand one variable's distribution, frequency, central tendency,
+   spread, and unusual values.
+
+a) Numerical variables
+   df["column"].describe()
+   df["column"].mean()
+   df["column"].median()
+   df["column"].mode()
+   df["column"].std()
+   df["column"].var()
+   df["column"].min()
+   df["column"].max()
+   df["column"].quantile([0.25, 0.50, 0.75])
+   df["column"].skew()
+   df["column"].kurt()
+
+b) Categorical variables
+   df["column"].unique()
+   df["column"].nunique()
+   df["column"].value_counts()
+   df["column"].value_counts(normalize=True)
+   df["column"].value_counts(dropna=False)
+
+c) Visualizations
+   df["column"].hist()
+   df.boxplot(column="column")
+
+   import seaborn as sns
+   import matplotlib.pyplot as plt
+
+   sns.histplot(data=df, x="column", kde=True)
+   sns.boxplot(data=df, x="column")
+   sns.countplot(data=df, x="category")
+   plt.show()
+
+
+3) BIVARIATE ANALYSIS — TWO VARIABLES
+-------------------------------------
+Purpose:
+   Explore the relationship between two variables.
+
+a) Numerical vs numerical
+   df[["col1", "col2"]].corr()
+   df[["col1", "col2"]].cov()
+   df.plot.scatter(x="col1", y="col2")
+
+   sns.scatterplot(data=df, x="col1", y="col2")
+
+b) Numerical vs categorical
+   df.groupby("category")["number"].mean()
+   df.groupby("category")["number"].median()
+   df.groupby("category")["number"].describe()
+   df.boxplot(column="number", by="category")
+
+   sns.boxplot(data=df, x="category", y="number")
+   sns.violinplot(data=df, x="category", y="number")
+
+c) Categorical vs categorical
+   pd.crosstab(df["category1"], df["category2"])
+
+   pd.crosstab(
+       df["category1"],
+       df["category2"],
+       normalize="index"
+   )
+
+   pd.crosstab(
+       df["category1"],
+       df["category2"],
+       margins=True
+   )
+
+   sns.countplot(data=df, x="category1", hue="category2")
+
+d) Correlation with a target
+   df.corrwith(df["target"], numeric_only=True)
+   df.groupby("target")["feature"].mean()
+   df.groupby("target")["feature"].median()
+
+
+4) MULTIVARIATE ANALYSIS — THREE OR MORE VARIABLES
+--------------------------------------------------
+Purpose:
+   Explore multiple variables together to identify broader patterns,
+   interactions, and possible relationships with the target.
+
+a) Correlation among numerical features
+   df.corr(numeric_only=True)
+   df.cov(numeric_only=True)
+
+b) Correlation heatmap
+   import seaborn as sns
+   import matplotlib.pyplot as plt
+
+   corr = df.corr(numeric_only=True)
+   sns.heatmap(corr, annot=True, cmap="coolwarm")
+   plt.show()
+
+c) Pairwise relationships across multiple features
+   sns.pairplot(
+       df[["feature1", "feature2", "target"]],
+       diag_kind="hist"
+   )
+   plt.show()
+
+d) Group multiple variables
+   df.groupby(["category1", "category2"]).size()
+
+   df.groupby(["category1", "category2"])["number"].mean()
+
+e) Pivot tables
+   df.pivot_table(
+       values="number",
+       index="category1",
+       columns="category2",
+       aggfunc="mean"
+   )
+
+f) Compare numerical features by target
+   df.groupby("target").mean(numeric_only=True)
+   df.groupby("target").median(numeric_only=True)
+
+NOTE:
+   Correlation captures linear relationships and does not prove causation.
+   Consider nonlinear patterns, interactions, and domain context.
+
+
+5) TARGET VARIABLE ANALYSIS FOR ML
+----------------------------------
+a) Classification target
+   df["target"].value_counts()
+   df["target"].value_counts(normalize=True)
+   df["target"].isnull().sum()
+
+b) Regression target
+   df["target"].describe()
+   df["target"].hist()
+   df["target"].skew()
+   df["target"].quantile([0.25, 0.50, 0.75])
+
+c) Target compared with features
+   df.groupby("target").size()
+   df.groupby("target").mean(numeric_only=True)
+   df.groupby("target")["feature"].describe()
+
+Check:
+   - Class imbalance in classification
+   - Target distribution and extreme values in regression
+   - Whether features contain information unavailable at prediction time
+
+
+6) OUTLIER ANALYSIS
+-------------------
+a) Inspect extremes
+   df["column"].min()
+   df["column"].max()
+   df["column"].quantile([0.01, 0.99])
+   df["column"].nlargest(10)
+   df["column"].nsmallest(10)
+
+b) IQR method
+   Q1 = df["column"].quantile(0.25)
+   Q3 = df["column"].quantile(0.75)
+   IQR = Q3 - Q1
+
+   lower = Q1 - 1.5 * IQR
+   upper = Q3 + 1.5 * IQR
+
+   outliers = df[
+       (df["column"] < lower) |
+       (df["column"] > upper)
+   ]
+
+c) Z-score analysis
+   # Requires scipy
+   from scipy.stats import zscore
+
+   z = zscore(df["column"].dropna())
+   # Common investigation threshold: abs(z) > 3
+
+NOTE:
+   An outlier is not automatically an error. Investigate it before
+   removing, clipping, or transforming it.
+
+
+7) MISSING-DATA ANALYSIS
+------------------------
+a) Missing-value counts and percentages
+   df.isnull().sum()
+   df.isnull().mean() * 100
+   df.isnull().sum().sort_values(ascending=False)
+
+b) Missing values per row
+   df.isnull().sum(axis=1)
+   df.isnull().mean(axis=1)
+
+c) Missingness by group
+   df.groupby("target").apply(
+       lambda group: group.isnull().mean()
+   )
+
+NOTE:
+   Understand why values are missing before choosing an imputation strategy.
+   For ML, fit learned imputation methods on training data only.
+
+
+8) DISTRIBUTION & FREQUENCY ANALYSIS
+------------------------------------
+a) Numerical frequency
+   df["column"].value_counts()
+   df["column"].value_counts(bins=10)
+
+b) Quantiles
+   df["column"].quantile(
+       [0.10, 0.25, 0.50, 0.75, 0.90]
+   )
+
+c) Constant or low-variation candidates
+   df.nunique()
+   df.nunique(dropna=False)
+
+
+9) REDUNDANCY & DATA-LEAKAGE CHECKS
+-----------------------------------
+a) Duplicate observations
+   df.duplicated().sum()
+   df.duplicated(subset=["col1", "col2"]).sum()
+
+b) Correlated numerical features
+   df.corr(numeric_only=True)
+
+c) Investigate leakage
+   - Target-derived columns
+   - Information recorded after the outcome
+   - Information unavailable when making predictions
+   - Identifiers that accidentally encode the target
+
+NOTE:
+   High correlation alone does not prove redundancy or leakage.
+   Use domain knowledge and consider the intended prediction scenario.
+
+
+10) EDA SUMMARY & VALIDATION
+----------------------------
+a) Recheck dataset
+   df.shape
+   df.info()
+   df.describe(include="all")
+   df.isnull().sum()
+   df.duplicated().sum()
+   df.nunique()
+
+b) Record findings
+   - Dataset size and feature types
+   - Missing values and duplicates
+   - Numerical distributions and potential outliers
+   - Category frequencies and class balance
+   - Relationships between features and target
+   - Possible redundant features or data leakage
+   - Preprocessing needed before modeling
+
+
+11) RECOMMENDED EDA WORKFLOW
+----------------------------
+   1. Inspect the dataset.
+   2. Perform univariate analysis.
+   3. Analyze the target variable.
+   4. Perform bivariate analysis.
+   5. Perform multivariate analysis.
+   6. Investigate missing values and outliers.
+   7. Visualize important patterns.
+   8. Check redundancy and possible leakage.
+   9. Record findings and plan preprocessing.
+
+
+IMPORTANT ML NOTES
+------------------
+- Split data before fitting learned preprocessing steps.
+- Fit imputers, scalers, encoders, and feature-selection steps on training
+  data only; use a pipeline where possible.
+- For time-series data, preserve time order when splitting.
+- Correlation does not imply causation.
+- Do not remove every outlier or fill every missing value automatically.
+- Choose methods based on the data, task, and domain context.
