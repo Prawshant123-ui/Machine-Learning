@@ -125,6 +125,7 @@ a) Numeric summary
    df["column"].var()
    df["column"].skew()
    df["column"].kurt()
+
 b) Numeric plots
    sns.histplot(df["column"], kde=True)
    sns.kdeplot(df["column"])
